@@ -23,22 +23,22 @@ modo = st.sidebar.radio(
 
 st.sidebar.markdown("---")
 st.sidebar.header("🎛️ Simulador What-If")
-st.sidebar.markdown("Ajusta las variables para ver el impacto en el P&L en tiempo real.")
+st.sidebar.markdown("Ajusta las variables para visualizar el impacto en el P&L en tiempo real.")
 
 sim_aov = st.sidebar.slider(
     "Mejora Ticket Medio (€)", 
     min_value=0.0, max_value=15.0, value=0.0, step=0.5,
-    help="Simula el impacto financiero si formamos al equipo para mejorar la venta cruzada."
+    help="Simula el impacto financiero derivado de una mejora en las ratios de venta cruzada de la plantilla."
 )
 
 sim_personal = st.sidebar.slider(
     "Ajuste de Plantilla (%)", 
     min_value=-30, max_value=30, value=0, step=5,
-    help="Simula qué pasaría con tus costes si reduces o aumentas las horas de personal."
+    help="Simula el impacto en costes operativos derivado de la reducción o ampliación de la cobertura horaria."
 )
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("**Arquitectura Zero-Disk:**\nLos datos se procesan en la memoria RAM y se autodestruyen al cerrar la sesión.")
+st.sidebar.markdown("**Arquitectura Zero-Disk:**\nLos datos comerciales se procesan exclusivamente en la memoria RAM y se autodestruyen al finalizar la sesión.")
 
 # ==========================================
 # 2. MOTOR DE CÁLCULO Y DASHBOARD
@@ -69,33 +69,35 @@ def renderizar_dashboard(df):
     st.markdown("---")
     
     # ==========================================
-    # BOTÓN POP-UP (RESUMEN CEO)
+    # BOTÓN POP-UP (RESUMEN EJECUTIVO Y DATA PIPELINE)
     # ==========================================
-    with st.popover("💡 Ver Resumen Ejecutivo para la Alta Dirección", use_container_width=True):
-        st.markdown("### 🎯 La 'Foto Grande': ¿Qué nos dice el conjunto de estas métricas?")
-        st.markdown("Si tuvieras que explicarle esta pantalla a un CEO en 30 segundos, el resumen es este: **Esta herramienta mide el punto exacto donde la eficiencia de costes choca con la calidad comercial.**")
+    with st.popover("💡 Ver Resumen Ejecutivo y Metodología de Ingesta de Datos", use_container_width=True):
+        st.markdown("### 🎯 Visión Macroestratégica: Interpretación del Conjunto de Métricas")
+        st.markdown("El presente cuadro de mando cuantifica el punto de equilibrio exacto entre la eficiencia operativa de costes y la excelencia en el servicio comercial. Constituye una herramienta de auditoría directiva diseñada para evaluar los siguientes vectores:")
         
         st.markdown("""
-        * **La rentabilidad real del turno:** No solo miras cuánto has vendido (Ingreso), sino cuánto te ha costado venderlo (Coste Laboral %). Si vendes mucho pero tienes a demasiada gente, el margen desaparece.
-        * **El coste de oportunidad (Conversión vs. Tráfico):** Si el tráfico es alto pero la conversión es baja, estás perdiendo clientes. La herramienta te dice si los pierdes porque el personal es malo (Matriz de Vendedores) o porque simplemente no dan abasto (Curva de Eficiencia).
-        * **La calidad de la venta (AOV y UPT):** Te indica si tu equipo está haciendo su trabajo como asesores (añadiendo valor a la cesta) o si están actuando como simples cajeros de supermercado por la presión del turno.
+        * **Rentabilidad Operativa del Turno:** Trasciende el volumen bruto de ingresos para ponderar el impacto del Coste Laboral (OPEX) sobre las ventas. Un sobredimensionamiento de la plantilla durante valles de demanda erosiona directamente el margen de contribución.
+        * **Coste de Oportunidad (Tasa de Conversión vs. Tráfico Peatonal):** Una alta densidad de tráfico correlacionada con una baja conversión indica una fuga sistémica de capital. El modelo segmenta el origen de esta pérdida: ineficiencia en las competencias de venta del personal (auditable en la Matriz de Rendimiento) o saturación operativa por falta de cobertura (auditable en la Curva de Eficiencia).
+        * **Calidad Transaccional (AOV y UPT):** Evalúa el grado de asesoramiento comercial. Determina si el equipo opera bajo un enfoque de 'venta cruzada' (incrementando la profundidad de la cesta) o si, debido a la presión operativa, el servicio se degrada a un mero modelo de despacho transaccional.
         
-        > **En definitiva:** el dashboard te chiva si estás perdiendo dinero por tener a demasiada gente cruzada de brazos, o si estás perdiendo ventas por tener a muy poca gente atendiendo.
+        > **Conclusión Ejecutiva:** El sistema diagnostica con precisión matemática la pérdida de rentabilidad derivada de una sobrecapacidad laboral (exceso de costes operativos) o la pérdida de volumen de negocio por infracobertura (insuficiencia de personal en sala).
         """)
         
         st.markdown("---")
-        st.markdown("### ⚙️ Los datos de entrada (¿Qué hay que meter en el programa?)")
+        st.markdown("### ⚙️ Requisitos de Ingesta de Datos (Data Pipeline)")
         st.markdown("""
-        La magia de esta herramienta es que el Store Manager no tiene que calcular ningún KPI. Solo tiene que exportar un informe \"bruto\" (Raw Data) muy básico desde su terminal de punto de venta (TPV) o sistema de fichajes. Para que el motor en Python escupa toda esta inteligencia, el Excel o CSV que el usuario arrastra solo necesita 8 columnas de datos puros:
+        La arquitectura del modelo abstrae al usuario operativo de cualquier cálculo de KPIs. El sistema requiere únicamente la exportación de un conjunto de datos brutos (Raw Data) procedente de los sistemas de planificación de recursos empresariales (ERP) o Terminales de Punto de Venta (TPV). 
         
-        1.  **Fecha / Turno**
-        2.  **Vendedor_ID** (Quién hizo la venta)
-        3.  **Ventas Brutas** (€ generados)
-        4.  **Transacciones** (Número de tickets emitidos)
-        5.  **Unidades** (Total de artículos pasados por caja)
-        6.  **Horas Trabajadas** (Cuánto duró el turno del vendedor)
-        7.  **Tráfico Tienda** (El dato del sensor de la puerta)
-        8.  **Coste Hora** (El salario hora del empleado)
+        Para la correcta ejecución del motor algorítmico, el archivo (formato CSV) debe estructurar la información en las siguientes 8 variables absolutas:
+        
+        1.  **Fecha / Turno:** Marca temporal de la transacción.
+        2.  **Vendedor_ID:** Identificador único del empleado asociado a la transacción.
+        3.  **Ventas Brutas:** Volumen económico generado (EUR).
+        4.  **Transacciones:** Volumen absoluto de tickets emitidos.
+        5.  **Unidades:** Volumen de artículos físicos procesados.
+        6.  **Horas Trabajadas:** Carga lectiva del turno por empleado.
+        7.  **Tráfico Tienda:** Volumen peatonal registrado por la sensórica de acceso.
+        8.  **Coste Hora:** Valor salarial unitario de la fuerza laboral.
         """)
 
     st.markdown("<br>", unsafe_allow_html=True)
@@ -167,27 +169,26 @@ def renderizar_dashboard(df):
     )
     st.plotly_chart(fig_eficiencia, use_container_width=True)
 
-    # NUEVO: BOTÓN POPOVER CON EL ANÁLISIS TÉCNICO E IMPERSONAL
     with st.popover("📊 Ver Análisis Técnico e Interpretación Operativa de la Curva", use_container_width=True):
-        st.markdown("### 1. Fundamiento Técnico de la Representación Gráfica")
+        st.markdown("### 1. Fundamento Técnico de la Representación Gráfica")
         st.markdown("""
-        La alineación del vector de coste lineal respecto al histograma de tráfico responde a criterios estandarizados de geometría analítica en librerías de visualización bidimensional (Plotly, PowerBI). 
+        La alineación del vector de coste lineal respecto al histograma de tráfico responde a criterios estandarizados de geometría analítica en librerías de visualización bidimensional. 
         
         * **El eje de abscisas (X)** opera con variables discretas temporales de carácter cronológico.
-        * **Componente de Barras (Tráfico):** Al poseer volumen, la interfaz expande su proyección geométrica simétricamente hacia los márgenes de cada intervalo para proporcionar densidad visual. Sin embargo, su centroide o 'centro de gravedad' exacto coincide con la marca temporal indexada.
-        * **Componente de Línea (Coste):** Las funciones lineales carecen de dimensión horizontal y se estructuran como una sucesión de nodos coordenados conectados. Por consiguiente, el punto inicial se ancla exactamente en el centro matemático del periodo, garantizando la máxima precisión al correlacionar variables de distinta naturaleza macroeconómica sobre un mismo eje temporal.
+        * **Componente de Barras (Tráfico):** Su centroide o 'centro de gravedad' exacto coincide con la marca temporal indexada.
+        * **Componente de Línea (Coste):** Las funciones lineales se estructuran como una sucesión de nodos coordenados conectados. Por consiguiente, el punto inicial se ancla exactamente en el centro matemático del periodo, garantizando la máxima precisión al correlacionar variables macroeconómicas sobre un mismo eje temporal.
         """)
         
         st.markdown("---")
         st.markdown("### 2. Interpretación Operativa y Análisis de Elasticidad de Costes")
         st.markdown("""
-        El objetivo de este modelo no radica en la convergencia lineal de ambas métricas, sino en la evaluación de la **elasticidad del gasto operativo (OPEX)** respecto a la volatilidad de la demanda en el punto de venta.
+        El objetivo de este modelo radica en la evaluación de la **elasticidad del gasto operativo (OPEX)** respecto a la volatilidad de la demanda en el punto de venta.
         
-        * **Fase de Mínimos Estructurales (Día 1):** Se constata un escenario de contracción de tráfico (aproximadamente 600 accesos) correlacionado con una optimización estricta del coste laboral, indicativo de un dimensionamiento correcto para jornadas de servicios mínimos o baja afluencia estructural.
-        * **Fase de Máxima Eficiencia Operativa (Días 2 al 5):** Se observa un incremento sostenido en el flujo peatonal que supera los 1000 accesos concurrentes; sin embargo, la curva de coste laboral permanece en un estado inelástico y constante. **Insight analítico:** La estructura operativa absorbe una tasa de crecimiento de demanda del 40% sin incurrir en costes marginales de personal, lo que se traduce en una maximización de la productividad por hora (VPH) y una optimización del margen de contribución.
-        * **Fase de Adaptación y Flexibilidad (Días 6 y 7):** Ante una desaceleración marginal del tráfico, se registra un ajuste descendente proporcional en la curva de coste, validando la capacidad de flexibilización horaria y control presupuestario en tiempo real.
+        * **Fase de Mínimos Estructurales (Valle temporal):** Se constata un escenario de contracción de tráfico correlacionado con una optimización estricta del coste laboral, indicativo de un dimensionamiento correcto para jornadas de baja afluencia estructural.
+        * **Fase de Máxima Eficiencia Operativa (Zonas de pico):** Se observa un incremento sostenido en el flujo peatonal frente a una curva de coste laboral inelástica. **Insight analítico:** La estructura operativa absorbe una alta tasa de crecimiento de demanda sin incurrir en costes marginales, traduciéndose en una maximización de la productividad por hora (VPH).
+        * **Fase de Adaptación y Flexibilidad:** Ante una desaceleración marginal del tráfico, se registra un ajuste descendente proporcional en la curva de coste, validando la capacidad de control presupuestario.
         
-        > ⚠️ **Detección de Anomalías Críticas:** El modelo está diseñado para identificar divergencias inversas (contracción de tráfico frente a picos de coste laboral). Dicho comportamiento asimétrico emitiría automáticamente una alerta de ineficiencia por sobrecapacidad, señalando una pérdida directa de margen operativo por falta de flexibilidad en la planificación de turnos.
+        > ⚠️ **Detección de Anomalías Críticas:** Una divergencia inversa (contracción de tráfico frente a picos de coste laboral) emitiría una alerta de ineficiencia por sobrecapacidad, señalando una pérdida directa de margen operativo.
         """)
 
     st.markdown("---")
@@ -225,13 +226,6 @@ def renderizar_dashboard(df):
     fig_matrix.update_layout(height=500, showlegend=False)
     st.plotly_chart(fig_matrix, use_container_width=True)
 
-    with st.expander("📖 Leer Metodología de la Matriz (Para Store Managers)"):
-        st.write("""
-        **¿Cómo interpretar el gráfico superior para tomar decisiones?**
-        - **Cuadrante Superior Derecho (Asesores Top):** Alto Ticket, Alto UPT. Son tus mejores vendedores.
-        - **Cuadrante Inferior Izquierdo (Despachadores):** Bajo Ticket, Bajo UPT. Estas personas solo cobran en caja. Necesitan formación en técnicas de venta, o bien, el Mapa de Calor indica que están colapsados de tráfico y no tienen tiempo de atender.
-        """)
-
     # ==========================================
     # FOOTER CORPORATIVO (FIRMA)
     # ==========================================
@@ -259,25 +253,25 @@ if modo == "📊 Modo Demo (Portfolio)":
         else:
             trafico_hora = np.random.randint(10, 50)
             
-        # VENDEDOR 1 (Junior) - Perfil bajo aislado
+        # VENDEDOR 1 (Junior)
         t1 = np.random.randint(3, 7)
         u1 = t1 * np.random.uniform(1.0, 1.2)
         v1 = u1 * np.random.uniform(10, 15)
         datos.append([dt, 'Vendedor 1 (Junior)', v1, t1, u1, 1, trafico_hora/4, 12.50])
         
-        # VENDEDOR 2 (Senior) - Perfil alto aislado
+        # VENDEDOR 2 (Senior)
         t2 = np.random.randint(1, 4)
         u2 = t2 * np.random.uniform(2.5, 3.0)
         v2 = u2 * np.random.uniform(35, 45)
         datos.append([dt, 'Vendedor 2 (Senior)', v2, t2, u2, 1, trafico_hora/4, 12.50])
 
-        # VENDEDOR 3 (Cajero) - Perfil medio-bajo aislado
+        # VENDEDOR 3 (Cajero)
         t3 = np.random.randint(4, 9)
         u3 = t3 * np.random.uniform(1.2, 1.4)
         v3 = u3 * np.random.uniform(15, 20)
         datos.append([dt, 'Vendedor 3 (Cajero)', v3, t3, u3, 1, trafico_hora/4, 12.50])
 
-        # VENDEDOR 4 (Asesor) - Perfil medio-alto aislado
+        # VENDEDOR 4 (Asesor)
         t4 = np.random.randint(2, 5)
         u4 = t4 * np.random.uniform(1.8, 2.2)
         v4 = u4 * np.random.uniform(25, 30)
