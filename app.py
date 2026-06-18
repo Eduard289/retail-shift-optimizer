@@ -48,9 +48,7 @@ def renderizar_dashboard(df):
     # ------------------------------------------
     # APLICACIÓN DEL SIMULADOR WHAT-IF
     # ------------------------------------------
-    # Si movemos el slider de Ticket Medio, aumentamos las ventas proporcionalmente a las transacciones
     df['Ventas'] = df['Ventas'] + (df['Transacciones'] * sim_aov)
-    # Si ajustamos plantilla, multiplicamos las horas reales
     df['Horas_Trabajadas'] = df['Horas_Trabajadas'] * (1 + (sim_personal / 100))
     
     # ------------------------------------------
@@ -61,7 +59,6 @@ def renderizar_dashboard(df):
     df['VPH'] = df['Ventas'] / df['Horas_Trabajadas'].replace(0, 1)
     df['Coste_Laboral_Total'] = df['Horas_Trabajadas'] * df['Coste_Hora']
     
-    # KPIs Globales Agregados
     ventas_totales = df['Ventas'].sum()
     aov_global = ventas_totales / df['Transacciones'].sum()
     upt_global = df['Unidades'].sum() / df['Transacciones'].sum()
@@ -70,9 +67,44 @@ def renderizar_dashboard(df):
     conversion_global = (df['Transacciones'].sum() / df['Trafico_Tienda'].sum()) * 100
 
     st.markdown("---")
+    
+    # ==========================================
+    # BOTÓN POP-UP (RESUMEN CEO)
+    # ==========================================
+    with st.popover("💡 Ver Resumen Ejecutivo para la Alta Dirección", use_container_width=True):
+        st.markdown("### 🎯 La 'Foto Grande': ¿Qué nos dice el conjunto de estas métricas?")
+        st.markdown("Si tuvieras que explicarle esta pantalla a un CEO en 30 segundos, el resumen es este: **Esta herramienta mide el punto exacto donde la eficiencia de costes choca con la calidad comercial.**")
+        
+        st.markdown("""
+        * **La rentabilidad real del turno:** No solo miras cuánto has vendido (Ingreso), sino cuánto te ha costado venderlo (Coste Laboral %). Si vendes mucho pero tienes a demasiada gente, el margen desaparece.
+        * **El coste de oportunidad (Conversión vs. Tráfico):** Si el tráfico es alto pero la conversión es baja, estás perdiendo clientes. La herramienta te dice si los pierdes porque el personal es malo (Matriz de Vendedores) o porque simplemente no dan abasto (Curva de Eficiencia).
+        * **La calidad de la venta (AOV y UPT):** Te indica si tu equipo está haciendo su trabajo como asesores (añadiendo valor a la cesta) o si están actuando como simples cajeros de supermercado por la presión del turno.
+        
+        > **En definitiva:** el dashboard te chiva si estás perdiendo dinero por tener a demasiada gente cruzada de brazos, o si estás perdiendo ventas por tener a muy poca gente atendiendo.
+        """)
+        
+        st.markdown("---")
+        st.markdown("### ⚙️ Los datos de entrada (¿Qué hay que meter en el programa?)")
+        st.markdown("""
+        La magia de esta herramienta es que el Store Manager no tiene que calcular ningún KPI. Solo tiene que exportar un informe "bruto" (Raw Data) muy básico desde su terminal de punto de venta (TPV) o sistema de fichajes. Para que el motor en Python escupa toda esta inteligencia, el Excel o CSV que el usuario arrastra solo necesita 8 columnas de datos puros:
+        
+        1.  **Fecha / Turno**
+        2.  **Vendedor_ID** (Quién hizo la venta)
+        3.  **Ventas Brutas** (€ generados)
+        4.  **Transacciones** (Número de tickets emitidos)
+        5.  **Unidades** (Total de artículos pasados por caja)
+        6.  **Horas Trabajadas** (Cuánto duró el turno del vendedor)
+        7.  **Tráfico Tienda** (El dato del sensor de la puerta)
+        8.  **Coste Hora** (El salario hora del empleado)
+        """)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ==========================================
+    # KPIs GLOBALES
+    # ==========================================
     st.markdown("### 📈 Salud Financiera del Turno")
     col1, col2, col3, col4 = st.columns(4)
-    
     col1.metric("Ingreso Total", f"{ventas_totales:,.0f} €", help="Volumen total de ventas brutas.")
     col2.metric("Coste Laboral s/ Ventas", f"{coste_laboral_pct:.1f} %", 
                 delta="Riesgo si > 15%" if coste_laboral_pct > 15 else "Óptimo", delta_color="inverse")
@@ -90,12 +122,11 @@ def renderizar_dashboard(df):
     st.markdown("---")
 
     # ==========================================
-    # NUEVO: MAPA DE CALOR HORARIO (ZONAS DE PELIGRO)
+    # MAPA DE CALOR HORARIO
     # ==========================================
     st.subheader("🔥 Mapa de Calor: Saturación de Tienda (Zonas de Peligro)")
     st.markdown("Identifica las horas críticas donde el ratio **Clientes por Empleado** se dispara, provocando fugas de ventas y caídas de conversión.")
     
-    # Extraemos Día y Hora de la marca de tiempo
     df['Fecha'] = pd.to_datetime(df['Fecha'])
     df['Hora'] = df['Fecha'].dt.hour
     df['Dia_Semana'] = df['Fecha'].dt.day_name().map({
@@ -103,7 +134,6 @@ def renderizar_dashboard(df):
         'Thursday': '4-Jueves', 'Friday': '5-Viernes', 'Saturday': '6-Sábado', 'Sunday': '7-Domingo'
     })
     
-    # Calculamos la carga de trabajo (Clientes por Empleado)
     df_heat = df.groupby(['Dia_Semana', 'Hora']).agg({'Trafico_Tienda': 'sum', 'Horas_Trabajadas': 'sum'}).reset_index()
     df_heat['Carga_Trabajo'] = df_heat['Trafico_Tienda'] / df_heat['Horas_Trabajadas'].replace(0, 1)
     
@@ -112,8 +142,7 @@ def renderizar_dashboard(df):
     fig_heat = px.imshow(
         heatmap_data, 
         labels=dict(x="Día de la Semana", y="Franja Horaria", color="Clientes por Empleado"),
-        color_continuous_scale="Reds", 
-        aspect="auto"
+        color_continuous_scale="Reds", aspect="auto"
     )
     fig_heat.update_layout(height=400, yaxis=dict(tickmode='linear', dtick=1))
     st.plotly_chart(fig_heat, use_container_width=True)
@@ -121,7 +150,27 @@ def renderizar_dashboard(df):
     st.markdown("---")
 
     # ==========================================
-    # GRÁFICO: MATRIZ DE RENDIMIENTO (CON SOLAPAMIENTO CORREGIDO)
+    # RECUPERADO: CURVA DE EFICIENCIA (TRÁFICO VS COSTE)
+    # ==========================================
+    st.subheader("⚖️ Curva de Eficiencia: Tráfico vs Coste Laboral")
+    
+    df_temporal = df.groupby(df['Fecha'].dt.date).agg({'Trafico_Tienda': 'sum', 'Coste_Laboral_Total': 'sum'}).reset_index()
+    
+    fig_eficiencia = go.Figure()
+    fig_eficiencia.add_trace(go.Bar(x=df_temporal['Fecha'], y=df_temporal['Trafico_Tienda'], name='Tráfico (Clientes)', marker_color='#3498db'))
+    fig_eficiencia.add_trace(go.Scatter(x=df_temporal['Fecha'], y=df_temporal['Coste_Laboral_Total'], name='Coste Laboral (€)', yaxis='y2', mode='lines+markers', line=dict(color='#e74c3c', width=3)))
+    
+    fig_eficiencia.update_layout(
+        yaxis=dict(title='Tráfico Peatonal'),
+        yaxis2=dict(title='Coste Laboral (€)', overlaying='y', side='right'),
+        height=400, legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
+    st.plotly_chart(fig_eficiencia, use_container_width=True)
+
+    st.markdown("---")
+
+    # ==========================================
+    # MATRIZ DE RENDIMIENTO (SOLAPAMIENTO CORREGIDO)
     # ==========================================
     st.subheader("🎯 Auditoría de Rendimiento Individual (Matriz Asesor vs Despachador)")
     st.markdown("Identifica carencias formativas cruzando la capacidad de venta cruzada (UPT) con el Ticket Medio (AOV).")
@@ -139,29 +188,20 @@ def renderizar_dashboard(df):
     fig_matrix.add_hline(y=aov_global, line_dash="dash", annotation_text="Media AOV", annotation_position="bottom right")
     fig_matrix.add_vline(x=upt_global, line_dash="dash", annotation_text="Media UPT", annotation_position="top left")
     
-    # MARCAS DE AGUA CORREGIDAS (Desplazamiento vertical para no pisar las burbujas)
-    max_upt, max_aov = df_vendedores['UPT'].max(), df_vendedores['Ticket_Medio'].max()
-    min_upt, min_aov = df_vendedores['UPT'].min(), df_vendedores['Ticket_Medio'].min()
-
+    # Text position forzada para evitar pisarse con las burbujas y separación del fondo
+    fig_matrix.update_traces(textposition='top center', textfont=dict(color='#ffffff'))
+    
     fig_matrix.add_annotation(
-        x=max_upt, y=max_aov + (max_aov * 0.05), # Desplazado ligeramente hacia arriba
+        x=df_vendedores['UPT'].max(), y=df_vendedores['Ticket_Medio'].max() + 5, 
         text="🌟 ASESORES TOP", showarrow=False, opacity=0.3, font=dict(size=20)
     )
     fig_matrix.add_annotation(
-        x=min_upt, y=min_aov - (min_aov * 0.08), # Desplazado ligeramente hacia abajo
+        x=df_vendedores['UPT'].min(), y=df_vendedores['Ticket_Medio'].min() - 5, 
         text="📦 DESPACHADORES", showarrow=False, opacity=0.3, font=dict(size=20)
     )
     
-    fig_matrix.update_traces(textposition='top center')
     fig_matrix.update_layout(height=500, showlegend=False)
     st.plotly_chart(fig_matrix, use_container_width=True)
-
-    with st.expander("📖 Leer Metodología de la Matriz (Para Store Managers)"):
-        st.write("""
-        **¿Cómo interpretar el gráfico superior para tomar decisiones?**
-        - **Cuadrante Superior Derecho (Asesores Top):** Alto Ticket, Alto UPT. Son tus mejores vendedores.
-        - **Cuadrante Inferior Izquierdo (Despachadores):** Bajo Ticket, Bajo UPT. Estas personas solo cobran en caja. Necesitan formación en técnicas de venta, o bien, el Mapa de Calor indica que están colapsados de tráfico y no tienen tiempo de atender.
-        """)
 
     # ==========================================
     # FOOTER CORPORATIVO (FIRMA)
@@ -178,38 +218,43 @@ def renderizar_dashboard(df):
 # 3. CONTROLADOR DE FLUJO (DEMO VS REAL)
 # ==========================================
 if modo == "📊 Modo Demo (Portfolio)":
-    st.info("💡 **Modo Demostración:** El dataset simula una semana de tráfico horario (10:00 a 21:00) con 4 vendedores de distintos perfiles.")
+    st.info("💡 **Modo Demostración:** Dataset sintético pre-cargado. Simula el rendimiento de 4 vendedores con perfiles psicológicos distintos a lo largo de una semana.")
     
-    # Generación de dataset horario (Time-Series) para que el Heatmap funcione
     np.random.seed(42)
     fechas_horas = pd.date_range(start="2026-06-01 10:00", end="2026-06-07 21:00", freq='h')
-    vendedores = ['Vendedor 1 (Junior)', 'Vendedor 2 (Senior)', 'Vendedor 3 (Cajero)', 'Vendedor 4 (Asesor)']
     
     datos = []
     for dt in fechas_horas:
-        # Simulamos que de 18:00 a 20:00 hay picos de tráfico
         if 18 <= dt.hour <= 20:
             trafico_hora = np.random.randint(60, 150)
         else:
             trafico_hora = np.random.randint(10, 50)
             
-        for v in vendedores:
-            horas = 1  # 1 hora por registro
-            coste_h = 12.50
-            
-            if "Senior" in v or "Asesor" in v:
-                transacciones = np.random.randint(1, 4)
-                unidades = transacciones * np.random.uniform(1.8, 3.0)
-                ventas = unidades * np.random.uniform(25, 45)
-            else:
-                transacciones = np.random.randint(3, 7)
-                unidades = transacciones * np.random.uniform(1.0, 1.3)
-                ventas = unidades * np.random.uniform(10, 20)
-                
-            datos.append([dt, v, ventas, transacciones, unidades, horas, trafico_hora/4, coste_h])
+        # VENDEDOR 1 (Junior) - Perfil bajo aislado
+        t1 = np.random.randint(3, 7)
+        u1 = t1 * np.random.uniform(1.0, 1.2)
+        v1 = u1 * np.random.uniform(10, 15)
+        datos.append([dt, 'Vendedor 1 (Junior)', v1, t1, u1, 1, trafico_hora/4, 12.50])
+        
+        # VENDEDOR 2 (Senior) - Perfil alto asilado
+        t2 = np.random.randint(1, 4)
+        u2 = t2 * np.random.uniform(2.5, 3.0)
+        v2 = u2 * np.random.uniform(35, 45)
+        datos.append([dt, 'Vendedor 2 (Senior)', v2, t2, u2, 1, trafico_hora/4, 12.50])
+
+        # VENDEDOR 3 (Cajero) - Perfil medio-bajo aislado
+        t3 = np.random.randint(4, 9)
+        u3 = t3 * np.random.uniform(1.2, 1.4)
+        v3 = u3 * np.random.uniform(15, 20)
+        datos.append([dt, 'Vendedor 3 (Cajero)', v3, t3, u3, 1, trafico_hora/4, 12.50])
+
+        # VENDEDOR 4 (Asesor) - Perfil medio-alto aislado
+        t4 = np.random.randint(2, 5)
+        u4 = t4 * np.random.uniform(1.8, 2.2)
+        v4 = u4 * np.random.uniform(25, 30)
+        datos.append([dt, 'Vendedor 4 (Asesor)', v4, t4, u4, 1, trafico_hora/4, 12.50])
             
     df_demo = pd.DataFrame(datos, columns=['Fecha', 'Vendedor_ID', 'Ventas', 'Transacciones', 'Unidades', 'Horas_Trabajadas', 'Trafico_Tienda', 'Coste_Hora'])
-    
     renderizar_dashboard(df_demo)
 
 else:
@@ -221,7 +266,6 @@ else:
     if archivo_subido is not None:
         try:
             df_real = pd.read_csv(archivo_subido)
-            # Requerimos las mismas columnas para mantener la integridad del dashboard
             columnas_requeridas = ['Fecha', 'Vendedor_ID', 'Ventas', 'Transacciones', 'Unidades', 'Horas_Trabajadas', 'Trafico_Tienda', 'Coste_Hora']
             if all(col in df_real.columns for col in columnas_requeridas):
                 st.success("Dataset validado y procesado en RAM con éxito.")
