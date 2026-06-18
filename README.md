@@ -1,4 +1,4 @@
-# 👥 Retail Shift & Performance Optimizer
+#  Retail Shift & Performance Optimizer
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.32%2B-FF4B4B?style=for-the-badge&logo=streamlit)
@@ -9,7 +9,7 @@ Motor analítico predictivo para el dimensionamiento de plantillas y la auditor�
 
 ---
 
-## 🎯 Visión Macroestratégica
+## Visión Macroestratégica
 
 El presente ecosistema analítico trasciende la simple visualización de ingresos brutos para diagnosticar y modelar la **elasticidad del gasto operativo**. La herramienta permite a Directores de Operaciones y Store Managers detectar con precisión matemática:
 * **Fugas de rentabilidad:** Derivadas de una sobrecapacidad laboral (exceso de plantilla en horas valle).
@@ -17,7 +17,7 @@ El presente ecosistema analítico trasciende la simple visualización de ingreso
 
 ---
 
-## 🛡️ Arquitectura Zero-Disk (In-Memory Processing)
+##  Arquitectura Zero-Disk (In-Memory Processing)
 
 El diseño de la aplicación responde a los más altos estándares de privacidad corporativa. La herramienta opera bajo un modelo **Stateless / Zero-Disk**:
 1. El usuario inyecta el conjunto de datos (Raw Data) del terminal TPV.
@@ -27,7 +27,7 @@ El diseño de la aplicación responde a los más altos estándares de privacidad
 
 ---
 
-## ⚙️ Capacidades Analíticas y Módulos Core
+##  Capacidades Analíticas y Módulos Core
 
 ### 1. Simulador Dinámico What-If
 Módulo interactivo que permite recalcular en tiempo real el P&L (Cuenta de Resultados) del turno modificando variables estratégicas:
@@ -45,7 +45,7 @@ Identificación algorítmica de puntos críticos de colapso. El mapa de calor di
 
 ---
 
-## 📊 Requisitos de Ingesta (Data Pipeline)
+##  Requisitos de Ingesta (Data Pipeline)
 
 El modelo está diseñado para abstraer al equipo de tienda de procesos de cálculo complejos. Solo requiere la importación de un archivo `.csv` plano con la siguiente estructura de 8 vectores:
 
@@ -62,7 +62,7 @@ El modelo está diseñado para abstraer al equipo de tienda de procesos de cálc
 
 ---
 
-## 🛠️ Instalación y Despliegue Local
+##  Instalación y Despliegue Local
 
 Para ejecutar este entorno analítico en una máquina local o servidor aislado:
 
