@@ -182,7 +182,7 @@ if modo == "📊 Modo Demo (Portfolio)":
     
     # Generación de dataset horario (Time-Series) para que el Heatmap funcione
     np.random.seed(42)
-    fechas_horas = pd.date_range(start="2026-06-01 10:00", end="2026-06-07 21:00", freq='H')
+    fechas_horas = pd.date_range(start="2026-06-01 10:00", end="2026-06-07 21:00", freq='h')
     vendedores = ['Vendedor 1 (Junior)', 'Vendedor 2 (Senior)', 'Vendedor 3 (Cajero)', 'Vendedor 4 (Asesor)']
     
     datos = []
