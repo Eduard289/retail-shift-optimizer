@@ -110,16 +110,16 @@ def renderizar_dashboard(df):
     col1.metric("Ingreso Total", f"{ventas_totales:,.0f} €", help="Volumen total de ventas brutas.")
     col2.metric("Coste Laboral s/ Ventas", f"{coste_laboral_pct:.1f} %", 
                 delta="Riesgo si > 15%" if coste_laboral_pct > 15 else "Óptimo", delta_color="inverse")
-    col3.metric("Tasa de Conversión", f"{conversion_global:.1f} %")
-    col4.metric("Productividad (VPH)", f"{vph_global:.1f} €/h")
+    col3.metric("Tasa de Conversión", f"{conversion_global:.1f} %", help="Ratio resultante entre el volumen de transacciones y el tráfico peatonal total.")
+    col4.metric("Productividad (VPH)", f"{vph_global:.1f} €/h", help="Ventas por Hora-Hombre. Ratio de rendimiento individual de la fuerza laboral.")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     col5, col6, col7, col8 = st.columns(4)
-    col5.metric("Ticket Medio (AOV)", f"{aov_global:.2f} €")
-    col6.metric("Unidades por Ticket (UPT)", f"{upt_global:.2f}")
-    col7.metric("Tráfico Total (Entradas)", f"{df['Trafico_Tienda'].sum():,.0f}")
-    col8.metric("Transacciones (Tickets)", f"{df['Transacciones'].sum():,.0f}")
+    col5.metric("Ticket Medio (AOV)", f"{aov_global:.2f} €", help="Gasto promedio por transacción (Average Order Value).")
+    col6.metric("Unidades por Ticket (UPT)", f"{upt_global:.2f}", help="Indicador de profundidad de la cesta y eficiencia en la Venta Cruzada (Cross-Selling).")
+    col7.metric("Tráfico Total (Entradas)", f"{df['Trafico_Tienda'].sum():,.0f}", help="Volumen bruto de accesos registrados mediante sensórica en punto de venta.")
+    col8.metric("Transacciones (Tickets)", f"{df['Transacciones'].sum():,.0f}", help="Volumen absoluto de operaciones de cobro emitidas.")
 
     st.markdown("---")
 
@@ -225,6 +225,23 @@ def renderizar_dashboard(df):
     
     fig_matrix.update_layout(height=500, showlegend=False)
     st.plotly_chart(fig_matrix, use_container_width=True)
+
+    # NUEVO: BOTÓN POPOVER CON EL ANÁLISIS DE LA MATRIZ
+    with st.popover("📊 Ver Diagnóstico Analítico de la Fuerza de Ventas", use_container_width=True):
+        st.markdown("### 1. Cuadrante Estratégico Superior (Asesores Premium)")
+        st.markdown("""
+        Posicionamiento caracterizado por una alta tasa de venta cruzada (UPT) y un alto Ticket Medio (AOV). Este cuadrante representa el perfil comercial óptimo.
+        * **Valor Operativo:** Maximiza el rendimiento financiero por transacción. Indica una competencia avanzada en detección de necesidades del cliente y proactividad en la prescripción de artículos complementarios.
+        * **Acción Recomendada:** Integración de estos perfiles como tutores o "Shadowing" para el resto de la plantilla comercial.
+        """)
+        
+        st.markdown("---")
+        st.markdown("### 2. Cuadrante Operativo Inferior (Perfil Transaccional / Despachador)")
+        st.markdown("""
+        Posicionamiento definido por una baja tasa de venta cruzada y un reducido Ticket Medio. Perfil orientado de forma casi exclusiva al cobro o despacho del artículo base.
+        * **Valor Operativo:** Elevado volumen de transacciones pero escaso valor añadido sobre la cesta de la compra.
+        * **Acción Recomendada:** Requiere intervención formativa inmediata en técnicas de venta asistida. *Nota analítica:* Si el Mapa de Calor muestra índices de saturación extremos simultáneamente, este perfil transaccional es un síntoma de infracobertura (el empleado no dispone de tiempo material para asesorar debido al volumen de afluencia).
+        """)
 
     # ==========================================
     # FOOTER CORPORATIVO (FIRMA)
